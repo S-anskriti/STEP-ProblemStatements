@@ -1,39 +1,37 @@
 import java.util.*;
-public class ProblemStatement1 {
-        static HashMap<String, Integer> users = new HashMap<>();
-        static HashMap<String, Integer> attempts = new HashMap<>();
 
-        public static void main(String[] args) {
-            users.put("john_doe", 1);
-            users.put("admin", 2);
-            System.out.println(checkAvailability("john_doe"));
-            System.out.println(checkAvailability("jane_smith"));
-            System.out.println(suggestAlternatives("john_doe"));
-            System.out.println(getMostAttempted());
-        }
-        static boolean checkAvailability(String username) {
-            attempts.put(username, attempts.getOrDefault(username, 0) + 1);
-            if (users.containsKey(username)) return false;
-            return true;
-        }
-        static List<String> suggestAlternatives(String username) {
-            List<String> list = new ArrayList<>();
-            for (int i = 1; i <= 3; i++) {
-                String s = username + i;
-                if (!users.containsKey(s)) list.add(s);
-            }
-            list.add(username.replace("_", "."));
-            return list;
-        }
-        static String getMostAttempted() {
-            String name = "";
-            int max = 0;
-            for (String key : attempts.keySet()) {
-                if (attempts.get(key) > max) {
-                    max = attempts.get(key);
-                    name = key;
-                }
-            }
-            return name;
+public class ProblemStatement1 {
+
+    static HashMap<String, Integer> stock = new HashMap<>();
+    static HashMap<String, LinkedList<Integer>> waiting = new HashMap<>();
+
+    public static void main(String[] args) {
+        stock.put("IPHONE15_256GB", 100);
+        waiting.put("IPHONE15_256GB", new LinkedList<>());
+
+        System.out.println(checkStock("IPHONE15_256GB"));
+        System.out.println(purchaseItem("IPHONE15_256GB", 12345));
+        System.out.println(purchaseItem("IPHONE15_256GB", 67890));
+
+        stock.put("IPHONE15_256GB", 0);
+        System.out.println(purchaseItem("IPHONE15_256GB", 99999));
+    }
+
+    static String checkStock(String product) {
+        int s = stock.getOrDefault(product, 0);
+        return s + " units available";
+    }
+
+    static synchronized String purchaseItem(String product, int userId) {
+        int s = stock.getOrDefault(product, 0);
+
+        if (s > 0) {
+            stock.put(product, s - 1);
+            return "Success, " + (s - 1) + " units remaining";
+        } else {
+            LinkedList<Integer> list = waiting.get(product);
+            list.add(userId);
+            return "Added to waiting list, position #" + list.size();
         }
     }
+}
