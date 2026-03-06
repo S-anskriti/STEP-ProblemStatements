@@ -2,36 +2,59 @@ import java.util.*;
 
 public class ProblemStatement1 {
 
-    static HashMap<String, Integer> stock = new HashMap<>();
-    static HashMap<String, LinkedList<Integer>> waiting = new HashMap<>();
+    static class Entry {
+        String ip;
+        long expiry;
+
+        Entry(String ip, long ttl) {
+            this.ip = ip;
+            this.expiry = System.currentTimeMillis() + ttl * 1000;
+        }
+    }
+
+    static HashMap<String, Entry> cache = new HashMap<>();
+    static int hits = 0;
+    static int miss = 0;
+    static int limit = 5;
 
     public static void main(String[] args) {
-        stock.put("IPHONE15_256GB", 100);
-        waiting.put("IPHONE15_256GB", new LinkedList<>());
-
-        System.out.println(checkStock("IPHONE15_256GB"));
-        System.out.println(purchaseItem("IPHONE15_256GB", 12345));
-        System.out.println(purchaseItem("IPHONE15_256GB", 67890));
-
-        stock.put("IPHONE15_256GB", 0);
-        System.out.println(purchaseItem("IPHONE15_256GB", 99999));
+        System.out.println(resolve("google.com"));
+        System.out.println(resolve("google.com"));
+        System.out.println(getCacheStats());
     }
 
-    static String checkStock(String product) {
-        int s = stock.getOrDefault(product, 0);
-        return s + " units available";
-    }
-
-    static synchronized String purchaseItem(String product, int userId) {
-        int s = stock.getOrDefault(product, 0);
-
-        if (s > 0) {
-            stock.put(product, s - 1);
-            return "Success, " + (s - 1) + " units remaining";
-        } else {
-            LinkedList<Integer> list = waiting.get(product);
-            list.add(userId);
-            return "Added to waiting list, position #" + list.size();
+    static String resolve(String domain) {
+        if (cache.containsKey(domain)) {
+            Entry e = cache.get(domain);
+            if (System.currentTimeMillis() < e.expiry) {
+                hits++;
+                return "Cache HIT " + e.ip;
+            } else {
+                cache.remove(domain);
+            }
         }
+
+        miss++;
+        String ip = queryDNS(domain);
+
+        if (cache.size() >= limit) {
+            String key = cache.keySet().iterator().next();
+            cache.remove(key);
+        }
+
+        cache.put(domain, new Entry(ip, 300));
+        return "Cache MISS " + ip;
+    }
+
+    static String queryDNS(String domain) {
+        Random r = new Random();
+        return "172.217.14." + (200 + r.nextInt(20));
+    }
+
+    static String getCacheStats() {
+        int total = hits + miss;
+        double rate = 0;
+        if (total > 0) rate = (hits * 100.0) / total;
+        return "Hit Rate: " + rate + "%";
     }
 }
