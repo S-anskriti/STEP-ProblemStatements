@@ -1,93 +1,79 @@
-```java id="y2rj0m"
+```java
 import java.util.*;
 
 public class ProblemStatement1 {
 
-    static class Transaction {
-        int id;
-        int amount;
-        String merchant;
-        int time;
-        String account;
+    static int L1_LIMIT = 3;
+    static int L2_LIMIT = 5;
 
-        Transaction(int id,int amount,String merchant,int time,String account){
-            this.id=id;
-            this.amount=amount;
-            this.merchant=merchant;
-            this.time=time;
-            this.account=account;
+    static LinkedHashMap<String,String> L1 = new LinkedHashMap<>(16,0.75f,true){
+        protected boolean removeEldestEntry(Map.Entry<String,String> e){
+            return size()>L1_LIMIT;
         }
+    };
+
+    static LinkedHashMap<String,String> L2 = new LinkedHashMap<>(16,0.75f,true){
+        protected boolean removeEldestEntry(Map.Entry<String,String> e){
+            return size()>L2_LIMIT;
+        }
+    };
+
+    static HashMap<String,String> L3 = new HashMap<>();
+    static HashMap<String,Integer> access = new HashMap<>();
+
+    static int l1Hit=0,l2Hit=0,l3Hit=0;
+
+    public static void main(String[] args){
+
+        L3.put("video_123","VideoData123");
+        L3.put("video_456","VideoData456");
+        L3.put("video_999","VideoData999");
+
+        getVideo("video_123");
+        getVideo("video_123");
+        getVideo("video_999");
+
+        getStatistics();
     }
 
-    public static void main(String[] args) {
+    static String getVideo(String id){
 
-        List<Transaction> list=new ArrayList<>();
+        if(L1.containsKey(id)){
+            l1Hit++;
+            System.out.println("L1 Cache HIT");
+            return L1.get(id);
+        }
 
-        list.add(new Transaction(1,500,"StoreA",600,"acc1"));
-        list.add(new Transaction(2,300,"StoreB",615,"acc2"));
-        list.add(new Transaction(3,200,"StoreC",630,"acc3"));
-        list.add(new Transaction(4,500,"StoreA",640,"acc4"));
+        if(L2.containsKey(id)){
+            l2Hit++;
+            System.out.println("L2 Cache HIT");
+            String data=L2.get(id);
+            L1.put(id,data);
+            return data;
+        }
 
-        findTwoSum(list,500);
-        detectDuplicates(list);
-        findKSum(list,3,1000);
+        if(L3.containsKey(id)){
+            l3Hit++;
+            System.out.println("L3 Database HIT");
+            String data=L3.get(id);
+            L2.put(id,data);
+            access.put(id,access.getOrDefault(id,0)+1);
+            return data;
+        }
+
+        return "Not Found";
     }
 
-    static void findTwoSum(List<Transaction> list,int target){
+    static void getStatistics(){
 
-        HashMap<Integer,Transaction> map=new HashMap<>();
+        int total=l1Hit+l2Hit+l3Hit;
 
-        for(Transaction t:list){
+        double r1=(l1Hit*100.0)/total;
+        double r2=(l2Hit*100.0)/total;
+        double r3=(l3Hit*100.0)/total;
 
-            int comp=target-t.amount;
-
-            if(map.containsKey(comp)){
-                Transaction x=map.get(comp);
-                System.out.println("Pair: "+x.id+" "+t.id);
-            }
-
-            map.put(t.amount,t);
-        }
-    }
-
-    static void detectDuplicates(List<Transaction> list){
-
-        HashMap<String,List<String>> map=new HashMap<>();
-
-        for(Transaction t:list){
-
-            String key=t.amount+"-"+t.merchant;
-
-            if(!map.containsKey(key)){
-                map.put(key,new ArrayList<>());
-            }
-
-            map.get(key).add(t.account);
-        }
-
-        for(String k:map.keySet()){
-            List<String> acc=map.get(k);
-            if(acc.size()>1){
-                System.out.println("Duplicate "+k+" accounts "+acc);
-            }
-        }
-    }
-
-    static void findKSum(List<Transaction> list,int k,int target){
-
-        int n=list.size();
-
-        for(int i=0;i<n;i++){
-            for(int j=i+1;j<n;j++){
-                for(int m=j+1;m<n;m++){
-
-                    int sum=list.get(i).amount+list.get(j).amount+list.get(m).amount;
-
-                    if(sum==target){
-                        System.out.println("KSum: "+list.get(i).id+" "+list.get(j).id+" "+list.get(m).id);
-                    }
-                }
-            }
-        }
+        System.out.println("L1 Hit Rate "+r1+"%");
+        System.out.println("L2 Hit Rate "+r2+"%");
+        System.out.println("L3 Hit Rate "+r3+"%");
     }
 }
