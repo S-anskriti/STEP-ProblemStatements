@@ -1,63 +1,51 @@
+```java
 import java.util.*;
 
 public class ProblemStatement1 {
 
-    static class TokenBucket {
-        int tokens;
-        long lastRefill;
-        int maxTokens;
-
-        TokenBucket(int max) {
-            maxTokens = max;
-            tokens = max;
-            lastRefill = System.currentTimeMillis();
-        }
-    }
-
-    static HashMap<String, TokenBucket> clients = new HashMap<>();
+    static HashMap<String,Integer> freq = new HashMap<>();
 
     public static void main(String[] args) {
 
-        System.out.println(checkRateLimit("abc123"));
-        System.out.println(checkRateLimit("abc123"));
-        System.out.println(getRateLimitStatus("abc123"));
+        addQuery("java tutorial");
+        addQuery("javascript");
+        addQuery("java download");
+        addQuery("java tutorial");
+        addQuery("java 21 features");
+
+        search("jav");
+
+        updateFrequency("java 21 features");
+        updateFrequency("java 21 features");
     }
 
-    static String checkRateLimit(String id) {
-
-        if (!clients.containsKey(id)) {
-            clients.put(id, new TokenBucket(1000));
-        }
-
-        TokenBucket b = clients.get(id);
-
-        long now = System.currentTimeMillis();
-
-        if (now - b.lastRefill >= 3600000) {
-            b.tokens = b.maxTokens;
-            b.lastRefill = now;
-        }
-
-        if (b.tokens > 0) {
-            b.tokens--;
-            return "Allowed (" + b.tokens + " requests remaining)";
-        } else {
-            long retry = (3600000 - (now - b.lastRefill)) / 1000;
-            return "Denied (0 requests remaining, retry after " + retry + "s)";
-        }
+    static void addQuery(String q){
+        freq.put(q,freq.getOrDefault(q,0)+1);
     }
 
-    static String getRateLimitStatus(String id) {
+    static void updateFrequency(String q){
+        freq.put(q,freq.getOrDefault(q,0)+1);
+        System.out.println(q+" -> Frequency: "+freq.get(q));
+    }
 
-        if (!clients.containsKey(id)) {
-            return "No data";
+    static void search(String prefix){
+
+        List<Map.Entry<String,Integer>> list = new ArrayList<>();
+
+        for(String q:freq.keySet()){
+            if(q.startsWith(prefix)){
+                list.add(new AbstractMap.SimpleEntry<>(q,freq.get(q)));
+            }
         }
 
-        TokenBucket b = clients.get(id);
+        list.sort((a,b)->b.getValue()-a.getValue());
 
-        int used = b.maxTokens - b.tokens;
-        long reset = (b.lastRefill + 3600000) / 1000;
+        int count=0;
 
-        return "{used: " + used + ", limit: " + b.maxTokens + ", reset: " + reset + "}";
+        for(Map.Entry<String,Integer> e:list){
+            count++;
+            System.out.println(count+". "+e.getKey()+" ("+e.getValue()+" searches)");
+            if(count==10) break;
+        }
     }
 }
