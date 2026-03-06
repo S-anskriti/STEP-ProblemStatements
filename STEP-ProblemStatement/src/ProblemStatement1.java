@@ -6,19 +6,16 @@ public class ProblemStatement1 {
         public static void main(String[] args) {
             users.put("john_doe", 1);
             users.put("admin", 2);
-
             System.out.println(checkAvailability("john_doe"));
             System.out.println(checkAvailability("jane_smith"));
             System.out.println(suggestAlternatives("john_doe"));
             System.out.println(getMostAttempted());
         }
-
         static boolean checkAvailability(String username) {
             attempts.put(username, attempts.getOrDefault(username, 0) + 1);
             if (users.containsKey(username)) return false;
             return true;
         }
-
         static List<String> suggestAlternatives(String username) {
             List<String> list = new ArrayList<>();
             for (int i = 1; i <= 3; i++) {
@@ -28,7 +25,6 @@ public class ProblemStatement1 {
             list.add(username.replace("_", "."));
             return list;
         }
-
         static String getMostAttempted() {
             String name = "";
             int max = 0;
@@ -41,4 +37,3 @@ public class ProblemStatement1 {
             return name;
         }
     }
-
