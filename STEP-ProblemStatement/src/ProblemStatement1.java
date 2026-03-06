@@ -2,59 +2,65 @@ import java.util.*;
 
 public class ProblemStatement1 {
 
-    static class Entry {
-        String ip;
-        long expiry;
+    static HashMap<String, Set<String>> map = new HashMap<>();
+    static int n = 5;
 
-        Entry(String ip, long ttl) {
-            this.ip = ip;
-            this.expiry = System.currentTimeMillis() + ttl * 1000;
+    public static void main(String[] args) {
+
+        String doc1 = "this is a simple essay written by a student for testing plagiarism detection system";
+        String doc2 = "this is a simple essay written by a student for checking plagiarism in documents";
+
+        addDocument("essay_089.txt", doc1);
+        addDocument("essay_092.txt", doc2);
+
+        analyzeDocument("essay_123.txt", doc1);
+    }
+
+    static void addDocument(String id, String text) {
+        String[] w = text.split(" ");
+
+        for (int i = 0; i <= w.length - n; i++) {
+            String g = "";
+            for (int j = 0; j < n; j++) {
+                g += w[i + j] + " ";
+            }
+
+            if (!map.containsKey(g)) {
+                map.put(g, new HashSet<>());
+            }
+
+            map.get(g).add(id);
         }
     }
 
-    static HashMap<String, Entry> cache = new HashMap<>();
-    static int hits = 0;
-    static int miss = 0;
-    static int limit = 5;
+    static void analyzeDocument(String id, String text) {
+        String[] w = text.split(" ");
+        HashMap<String, Integer> count = new HashMap<>();
 
-    public static void main(String[] args) {
-        System.out.println(resolve("google.com"));
-        System.out.println(resolve("google.com"));
-        System.out.println(getCacheStats());
-    }
+        int total = 0;
 
-    static String resolve(String domain) {
-        if (cache.containsKey(domain)) {
-            Entry e = cache.get(domain);
-            if (System.currentTimeMillis() < e.expiry) {
-                hits++;
-                return "Cache HIT " + e.ip;
-            } else {
-                cache.remove(domain);
+        for (int i = 0; i <= w.length - n; i++) {
+            String g = "";
+            for (int j = 0; j < n; j++) {
+                g += w[i + j] + " ";
+            }
+
+            total++;
+
+            if (map.containsKey(g)) {
+                for (String d : map.get(g)) {
+                    count.put(d, count.getOrDefault(d, 0) + 1);
+                }
             }
         }
 
-        miss++;
-        String ip = queryDNS(domain);
+        System.out.println("Extracted " + total + " n-grams");
 
-        if (cache.size() >= limit) {
-            String key = cache.keySet().iterator().next();
-            cache.remove(key);
+        for (String d : count.keySet()) {
+            int m = count.get(d);
+            double sim = (m * 100.0) / total;
+            System.out.println("Found " + m + " matching n-grams with " + d);
+            System.out.println("Similarity: " + sim + "%");
         }
-
-        cache.put(domain, new Entry(ip, 300));
-        return "Cache MISS " + ip;
-    }
-
-    static String queryDNS(String domain) {
-        Random r = new Random();
-        return "172.217.14." + (200 + r.nextInt(20));
-    }
-
-    static String getCacheStats() {
-        int total = hits + miss;
-        double rate = 0;
-        if (total > 0) rate = (hits * 100.0) / total;
-        return "Hit Rate: " + rate + "%";
     }
 }
