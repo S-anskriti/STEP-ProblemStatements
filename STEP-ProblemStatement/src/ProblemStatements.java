@@ -1,118 +1,94 @@
-class Asset {
-    String name;
-    double returnRate;
-    double volatility;
-
-    Asset(String name, double returnRate, double volatility) {
-        this.name = name;
-        this.returnRate = returnRate;
-        this.volatility = volatility;
-    }
-}
+import java.util.Arrays;
 
 public class ProblemStatements {
-    static void mergeSort(Asset[] arr, int left, int right) {
-        if (left < right) {
-            int mid = (left + right) / 2;
-            mergeSort(arr, left, mid);
-            mergeSort(arr, mid + 1, right);
-            merge(arr, left, mid, right);
-        }
-    }
-
-    static void merge(Asset[] arr, int left, int mid, int right) {
-        int n1 = mid - left + 1;
-        int n2 = right - mid;
-
-        Asset[] L = new Asset[n1];
-        Asset[] R = new Asset[n2];
-
-        for (int i = 0; i < n1; i++) {
-            L[i] = arr[left + i];
-        }
-        for (int j = 0; j < n2; j++) {
-            R[j] = arr[mid + 1 + j];
-        }
-
-        int i = 0, j = 0, k = left;
-
-        while (i < n1 && j < n2) {
-            if (L[i].returnRate <= R[j].returnRate) {
-                arr[k++] = L[i++];
-            } else {
-                arr[k++] = R[j++];
-            }
-        }
-
-        while (i < n1) {
-            arr[k++] = L[i++];
-        }
-
-        while (j < n2) {
-            arr[k++] = R[j++];
-        }
-    }
-
-    static void quickSort(Asset[] arr, int low, int high) {
-        if (low < high) {
-            int p = partition(arr, low, high);
-            quickSort(arr, low, p - 1);
-            quickSort(arr, p + 1, high);
-        }
-    }
-
-    static int partition(Asset[] arr, int low, int high) {
-        Asset pivot = arr[high];
-        int i = low - 1;
-
-        for (int j = low; j < high; j++) {
-            if (arr[j].returnRate > pivot.returnRate ||
-                    (arr[j].returnRate == pivot.returnRate && arr[j].volatility < pivot.volatility)) {
-                i++;
-                Asset temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-
-        Asset temp = arr[i + 1];
-        arr[i + 1] = arr[high];
-        arr[high] = temp;
-
-        return i + 1;
-    }
-
-    static Asset[] copy(Asset[] arr) {
-        Asset[] temp = new Asset[arr.length];
+    static int linearFirst(String[] arr, String target) {
+        int comparisons = 0;
         for (int i = 0; i < arr.length; i++) {
-            temp[i] = new Asset(arr[i].name, arr[i].returnRate, arr[i].volatility);
+            comparisons++;
+            if (arr[i].equals(target)) {
+                System.out.println("Linear First Occurrence Index: " + i);
+                System.out.println("Comparisons: " + comparisons);
+                return i;
+            }
         }
-        return temp;
+        System.out.println("Not found");
+        System.out.println("Comparisons: " + comparisons);
+        return -1;
+    }
+
+    static int linearLast(String[] arr, String target) {
+        int comparisons = 0;
+        for (int i = arr.length - 1; i >= 0; i--) {
+            comparisons++;
+            if (arr[i].equals(target)) {
+                System.out.println("Linear Last Occurrence Index: " + i);
+                System.out.println("Comparisons: " + comparisons);
+                return i;
+            }
+        }
+        System.out.println("Not found");
+        System.out.println("Comparisons: " + comparisons);
+        return -1;
+    }
+
+    static int binarySearch(String[] arr, String target) {
+        int low = 0, high = arr.length - 1;
+        int comparisons = 0;
+
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            comparisons++;
+            int cmp = arr[mid].compareTo(target);
+
+            if (cmp == 0) {
+                System.out.println("Binary Search Found at Index: " + mid);
+                System.out.println("Comparisons: " + comparisons);
+                return mid;
+            } else if (cmp < 0) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        System.out.println("Not found");
+        System.out.println("Comparisons: " + comparisons);
+        return -1;
+    }
+
+    static int countOccurrences(String[] arr, String target) {
+        int count = 0;
+        for (String s : arr) {
+            if (s.equals(target)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public static void main(String[] args) {
-        Asset[] assets = {
-                new Asset("AAPL", 12.0, 5.0),
-                new Asset("TSLA", 8.0, 9.0),
-                new Asset("GOOG", 15.0, 4.0),
-                new Asset("META", 12.0, 3.0)
-        };
+        String[] logs = {"accB", "accA", "accB", "accC", "accB"};
 
-        Asset[] mergeArray = copy(assets);
-        Asset[] quickArray = copy(assets);
-
-        mergeSort(mergeArray, 0, mergeArray.length - 1);
-        System.out.println("Merge Sort Ascending by Return:");
-        for (Asset a : mergeArray) {
-            System.out.println(a.name + " : " + a.returnRate + "%");
+        System.out.println("Original Array:");
+        for (String s : logs) {
+            System.out.print(s + " ");
         }
+        System.out.println("\n");
+
+        linearFirst(logs, "accB");
+        linearLast(logs, "accB");
 
         System.out.println();
 
-        quickSort(quickArray, 0, quickArray.length - 1);
-        System.out.println("Quick Sort Descending by Return and Ascending by Volatility:");
-        for (Asset a : quickArray) {
-            System.out.println(a.name + " : " + a.returnRate + "% : " + a.volatility);
+        Arrays.sort(logs);
+        System.out.println("Sorted Array:");
+        for (String s : logs) {
+            System.out.print(s + " ");
         }
+        System.out.println("\n");
+
+        binarySearch(logs, "accB");
+        System.out.println("Count of accB: " + countOccurrences(logs, "accB"));
+        System.out.println("Time Complexity: Linear O(n), Binary O(log n)");
     }
 }
