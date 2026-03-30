@@ -1,79 +1,114 @@
-```java
-import java.util.*;
+import java.util.ArrayList;
+
+class Transaction {
+    String id;
+    double fee;
+    String timestamp;
+
+    Transaction(String id, double fee, String timestamp) {
+        this.id = id;
+        this.fee = fee;
+        this.timestamp = timestamp;
+    }
+
+    public String toString() {
+        return id + ":" + fee + "@" + timestamp;
+    }
+}
 
 public class ProblemStatements {
+    static void bubbleSortByFee(ArrayList<Transaction> transactions) {
+        int n = transactions.size();
+        int passes = 0;
+        int swaps = 0;
 
-    static int L1_LIMIT = 3;
-    static int L2_LIMIT = 5;
-
-    static LinkedHashMap<String,String> L1 = new LinkedHashMap<>(16,0.75f,true){
-        protected boolean removeEldestEntry(Map.Entry<String,String> e){
-            return size()>L1_LIMIT;
+        for (int i = 0; i < n - 1; i++) {
+            boolean swapped = false;
+            passes++;
+            for (int j = 0; j < n - i - 1; j++) {
+                if (transactions.get(j).fee > transactions.get(j + 1).fee) {
+                    Transaction temp = transactions.get(j);
+                    transactions.set(j, transactions.get(j + 1));
+                    transactions.set(j + 1, temp);
+                    swaps++;
+                    swapped = true;
+                }
+            }
+            if (!swapped) {
+                break;
+            }
         }
-    };
 
-    static LinkedHashMap<String,String> L2 = new LinkedHashMap<>(16,0.75f,true){
-        protected boolean removeEldestEntry(Map.Entry<String,String> e){
-            return size()>L2_LIMIT;
+        System.out.println("Bubble Sort (fees ascending):");
+        for (Transaction t : transactions) {
+            System.out.println(t.id + ":" + t.fee);
         }
-    };
-
-    static HashMap<String,String> L3 = new HashMap<>();
-    static HashMap<String,Integer> access = new HashMap<>();
-
-    static int l1Hit=0,l2Hit=0,l3Hit=0;
-
-    public static void main(String[] args){
-
-        L3.put("video_123","VideoData123");
-        L3.put("video_456","VideoData456");
-        L3.put("video_999","VideoData999");
-
-        getVideo("video_123");
-        getVideo("video_123");
-        getVideo("video_999");
-
-        getStatistics();
+        System.out.println("Passes: " + passes);
+        System.out.println("Swaps: " + swaps);
     }
 
-    static String getVideo(String id){
+    static void insertionSortByFeeAndTimestamp(ArrayList<Transaction> transactions) {
+        for (int i = 1; i < transactions.size(); i++) {
+            Transaction key = transactions.get(i);
+            int j = i - 1;
 
-        if(L1.containsKey(id)){
-            l1Hit++;
-            System.out.println("L1 Cache HIT");
-            return L1.get(id);
+            while (j >= 0 && (
+                    transactions.get(j).fee > key.fee ||
+                            (transactions.get(j).fee == key.fee &&
+                                    transactions.get(j).timestamp.compareTo(key.timestamp) > 0))) {
+                transactions.set(j + 1, transactions.get(j));
+                j--;
+            }
+
+            transactions.set(j + 1, key);
         }
 
-        if(L2.containsKey(id)){
-            l2Hit++;
-            System.out.println("L2 Cache HIT");
-            String data=L2.get(id);
-            L1.put(id,data);
-            return data;
+        System.out.println("Insertion Sort (fee + timestamp ascending):");
+        for (Transaction t : transactions) {
+            System.out.println(t.id + ":" + t.fee + "@" + t.timestamp);
         }
-
-        if(L3.containsKey(id)){
-            l3Hit++;
-            System.out.println("L3 Database HIT");
-            String data=L3.get(id);
-            L2.put(id,data);
-            access.put(id,access.getOrDefault(id,0)+1);
-            return data;
-        }
-
-        return "Not Found";
     }
 
-    static void getStatistics(){
+    static void findHighFeeOutliers(ArrayList<Transaction> transactions) {
+        boolean found = false;
+        System.out.println("High-fee outliers:");
+        for (Transaction t : transactions) {
+            if (t.fee > 50) {
+                System.out.println(t.id + ":" + t.fee);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("none");
+        }
+    }
 
-        int total=l1Hit+l2Hit+l3Hit;
+    static ArrayList<Transaction> copyList(ArrayList<Transaction> original) {
+        ArrayList<Transaction> copy = new ArrayList<>();
+        for (Transaction t : original) {
+            copy.add(new Transaction(t.id, t.fee, t.timestamp));
+        }
+        return copy;
+    }
 
-        double r1=(l1Hit*100.0)/total;
-        double r2=(l2Hit*100.0)/total;
-        double r3=(l3Hit*100.0)/total;
+    public static void main(String[] args) {
+        ArrayList<Transaction> transactions = new ArrayList<>();
 
-        System.out.println("L1 Hit Rate "+r1+"%");
-        System.out.println("L2 Hit Rate "+r2+"%");
-        System.out.println("L3 Hit Rate "+r3+"%");
+        transactions.add(new Transaction("id1", 10.5, "10:00"));
+        transactions.add(new Transaction("id2", 25.0, "09:30"));
+        transactions.add(new Transaction("id3", 5.0, "10:15"));
+        transactions.add(new Transaction("id4", 60.0, "11:00"));
+        transactions.add(new Transaction("id5", 25.0, "09:00"));
+
+        ArrayList<Transaction> bubbleList = copyList(transactions);
+        ArrayList<Transaction> insertionList = copyList(transactions);
+
+        bubbleSortByFee(bubbleList);
+        System.out.println();
+
+        insertionSortByFeeAndTimestamp(insertionList);
+        System.out.println();
+
+        findHighFeeOutliers(transactions);
     }
 }
