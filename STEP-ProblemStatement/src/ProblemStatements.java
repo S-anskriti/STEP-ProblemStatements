@@ -1,7 +1,7 @@
 ```java
 import java.util.*;
 
-public class ProblemStatement1 {
+public class ProblemStatements {
 
     static int L1_LIMIT = 3;
     static int L2_LIMIT = 5;
